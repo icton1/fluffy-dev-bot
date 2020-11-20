@@ -1,4 +1,4 @@
-from telegramBot.telegrambot import bot
+from telegrambot.bot import bot
 
 
 def first_f():

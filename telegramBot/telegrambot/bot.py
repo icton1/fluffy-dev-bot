@@ -1,5 +1,5 @@
 import telebot
-import first_func as frst
+import telegrambot.first_func as frst
 
 
 access_token = "1489218543:AAGKxQNnAjHPLyc3LTYlk4adYWZKEj91NXE"
