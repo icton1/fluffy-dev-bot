@@ -17,22 +17,18 @@ def get_page(id_user) -> str:
 
 
 def get_id():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'}
     datas = {
-        "p_t18": '285891',
-        "p_t19": 'Me4nik12_'
+        "p_t18":"285891",
+        "p_t19":"Me4nik12_"
     }
-    url = 'https://isu.ifmo.ru/pls/apex/f?p=2437:7:{domain}:::::'.format(
-        domain = 107282354899480
-    )
+    url = 'https://isu.ifmo.ru/portal/103392195719416'
     s = requests.Session()
-    loging = s.post(url, headers = headers, data = datas)
+    loging = s.post(url, data= datas)
     web_page = loging.text
     print(web_page)
-
-
     return web_page
+
+
 
 
 def parse_id_of_user(web_page):
@@ -43,4 +39,3 @@ def parse_id_of_user(web_page):
 
 if __name__ == '__main__':
     web_page = get_id()
-    head_id = parse_id_of_user(web_page)

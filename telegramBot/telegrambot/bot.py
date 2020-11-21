@@ -13,22 +13,25 @@ status = -1
 
 @bot.message_handler(commands=["start"])
 def default_test(message):
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    url_button = telebot.types.InlineKeyboardButton(text="Авторизироваться через ИСУ",
-                                                    url="https://isu.ifmo.ru/pls/apex/f?p=2143:LOGIN:106933509959320")
-    keyboard.add(url_button)
-    bot.send_message(message.chat.id, "Привет! Авторизируйся перед тем, как начать", reply_markup=keyboard)
+    user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
+    user_markup.row('/registration')
+    bot.send_message(message.from_user.id,
+    "Добро пожаловать, перед началом работы,\n"
+    "Пожалуйста, ознакомьтесь с функционалом.\n"
+    "Прежде всего вам необходимо зарегистрироваться",
+    reply_markup = user_markup)
 
 
 @bot.message_handler(commands=['help'])
 def handle_start(message):
+    global status
     user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup.row('/write_message')
-    user_markup.row('/main_quest', '/deadline_check')
-    bot.send_message(message.from_user.id,
-                     "Добро пожаловать, перед началом работы,\n"
-                     "Пожалуйста, ознакомьтесь с функционалом.\n"
-                     "Прежде всего вам необходимо зарегистрироваться",
+    if status == 0:
+        user_markup.row('/write_message')
+        user_markup.row('/main_quest')
+    else:
+        user_markup.row('/deadline_check')
+    bot.send_message(message.from_user.id,"Вам доступны следующие команды",
                      reply_markup=user_markup)
 
 
@@ -93,9 +96,9 @@ def go_next(message):
         bot.register_next_step_handler(sent, registration)
 
     elif message.text.lower() == 'студент':
-        sent = bot.send_message(message.chat.id, "Иванович (фамилия)\n"
+        sent = bot.send_message(message.chat.id, "Иванов (фамилия)\n"
                                                  "Иван (имя) \n"
-                                                 "Иванов (отчество)\n"
+                                                 "Иванович (отчество)\n"
                                                  "k3240 (Учебная группа)")
         status = 1
         bot.register_next_step_handler(sent, registration)
