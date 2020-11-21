@@ -1,13 +1,10 @@
-import types
 import telebot
-from telebot import types
-import telegrambot.first_func as frst
+
 from telegrambot.database.db import Database
 from telegrambot.database.models import Teacher, Student
 
 access_token = "1489218543:AAGKxQNnAjHPLyc3LTYlk4adYWZKEj91NXE"
 bot = telebot.TeleBot(access_token)
-
 
 db = Database('sqlite:///university.db')
 
@@ -15,58 +12,48 @@ db = Database('sqlite:///university.db')
 @bot.message_handler(content_types=['text'])
 def first_try(message):
     if message.text == '/start':
-        send = bot.send_message(message.chat.id, "Введите пожалуйста свои данные:\nИмя\n"
-                                                 "Фамилия\n"
-                                                 "Отчество\n"
-                                                 "Предмет")
+        send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
+                                                 "Иванович (фамилия)\n"
+                                                 "Иван (имя)\n"
+                                                 "Иванов (отчество)\n"
+                                                 "Математика (предмет)")
         bot.register_next_step_handler(send, registration)
     elif message.text == '/write_message':
-        send = bot.send_message(message.chat.id, "Группы + Сообщение")
+        send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
+                                                 "K1234 K3412 (группы)\n"
+                                                 "Завтра пар не будет (сообщение группам)")
         bot.register_next_step_handler(send, message_to_groups)
-
-    elif message.text == 'Дальше':
-        start = ["Выберите пожалуйста функционал, которым хотите воспользоваться:"]
-        bot.send_message(message.chat.id, start)
-    else:
-        bot.send_message(message.chat.id, db.get_students() + db.get_teachers())
-
-
-"""
-    elif message.text == '1':
-        frst.first_f()
-        ending_alert = "Если хотите продолжить, напишите 'Дальше'"
-        bot.send_message(message.chat.id, ending_alert)
-
-    else:
-        return None
-"""
 
 
 def registration(message):
-    status, name, surname, patronymic, subject = message.text.split()
+    try:
+        status, surname, name, patronymic, subject = message.text.split('\n')
+    except ValueError:
+        bot.send_message(message.chat.id, 'Некорректные данные, повторите попытку')
+        message.text = '/start'
+        first_try(message)
+        return
     if status == 0:
-        db.add_teacher(Teacher(message.chat.id, name, surname, patronymic, subject))
+        db.add(Teacher(message.chat.id, name, surname, patronymic, subject))
     else:
-        db.add_student(Student(message.chat.id, name, surname, patronymic, subject))
+        db.add(Student(message.chat.id, name, surname, patronymic, subject))
     bot.send_message(message.chat.id, "{name} {patronymic}, Вы успешно зарегестрированы!".format(name=name,
                                                                                                  patronymic=patronymic))
-    print(db.get_teachers())
 
 
 def message_to_groups(message):
-    group, mess = message.text.split()
-    students = db.get_students()
-    for student in students:
-        if student.group == group:
-            bot.send_message(student.user_id, mess)
-    bot.send_message(message.chat.id, "Message deployed!")
-
-
-
-@bot.message_handler(content_types=['voice'])
-def kruto(message):
-    kruto2 = "Пошел нахуй с аудио"
-    bot.send_message(message.chat.id, kruto2)
+    try:
+        groups, mess = message.text.split('\n')
+    except ValueError:
+        bot.send_message(message.chat.id, "Некорректные данные, возврат в меню")
+        return
+    groups = groups.split()
+    students = db.get(Student)
+    for group in groups:
+        for student in students:
+            if student.group == group:
+                bot.send_message(student.user_id, mess)
+    bot.send_message(message.chat.id, "Сообщения отправлены!")
 
 
 if __name__ == '__main__':

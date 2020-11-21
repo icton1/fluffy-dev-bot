@@ -11,24 +11,15 @@ class Database:
         self.session = Session()
         Base.metadata.create_all(bind=engine)
 
-    def add_student(self, student):
-        self.session.add(student)
+    def add(self, obj):
+        self.session.add(obj)
         self.session.commit()
 
-    def add_teacher(self, teacher):
-        self.session.add(teacher)
-        self.session.commit()
-
-    def get_students(self):
-        return self.session.query(Student).all()
-
-    def get_teachers(self):
-        return self.session.query(Teacher).all()
+    def get(self, obj):
+        return self.session.query(obj).all()
 
     def get_students_by_chat_id(self, chat_id):
         return self.session.query(Student).filter(chat_id=chat_id)
 
     def get_students_by_chat_id(self, chat_id):
         return self.session.query(Teacher).filter(chat_id=chat_id)
-
-
