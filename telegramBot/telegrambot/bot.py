@@ -9,15 +9,13 @@ bot = telebot.TeleBot(access_token)
 db = Database('sqlite:///university.db')
 
 
-@bot.message_handler(commands=['start'])
-def handle_start(message):
-    user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup.row('/registration')
-    bot.send_message(message.from_user.id,
-                     "Добро пожаловать, перед началом работы,\n"
-                     "Пожалуйста, ознакомьтесь с функционалом.\n"
-                     "Прежде всего вам необходимо зарегистрироваться",
-                     reply_markup=user_markup)
+@bot.message_handler(commands=["start"])
+def default_test(message):
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    url_button = telebot.types.InlineKeyboardButton(text="Авторизироваться через ИСУ",
+                                            url="https://isu.ifmo.ru/pls/apex/f?p=2143:LOGIN:106933509959320")
+    keyboard.add(url_button)
+    bot.send_message(message.chat.id, "Привет! Авторизируйся перед тем, как начать", reply_markup=keyboard)
 
 
 @bot.message_handler(commands=['help'])
@@ -93,14 +91,17 @@ def go_next(message):
                                                  "Иван (имя) \n"
                                                  "Иванович (отчество)\n"
                                                  "Математика (предмет)")
-        bot.register_next_step_handler(sent, registration)
+        stat = 0
+        bot.register_next_step_handler(sent, registration(stat, message.text))
 
     elif (message.text == 'студент') or (message.text == 'Студент'):
         sent = bot.send_message(message.chat.id, "Иванович (фамилия)\n"
                                                  "Иван (имя) \n"
                                                  "Иванов (отчество)\n"
                                                  "k3240 (Учебная группа)")
-        bot.register_next_step_handler(sent, registration)
+        stat = 1
+        bot.register_next_step_handler(sent, registration(stat, message.text))
+
     else:
         bot.send_message(message.text.id, 'Проверьте правильность введённых данных')
 
