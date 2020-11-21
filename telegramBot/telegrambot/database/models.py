@@ -32,16 +32,17 @@ class Student(Base):
     group = Column(String(10), nullable=False)
     status = Column(String(20), nullable=False)
 
-    def __init__(self, user_id, name, surname, patronymic, group):
+    def __init__(self, user_id, name, surname, patronymic, group, status):
         self.user_id = user_id
         self.name = name
         self.surname = surname
         self.patronymic = patronymic
         self.group = group
+        self.status = status
 
     def __repr__(self):
-        return "Student(%s, '%s', '%s', '%s', '%s')" % (
-            self.user_id, self.name, self.surname, self.patronymic, self.group)
+        return "Student(%s, '%s', '%s', '%s', '%s', '%s')" % (
+            self.user_id, self.name, self.surname, self.patronymic, self.group, self.status)
 
 
 class Quest(Base):

@@ -8,6 +8,8 @@ bot = telebot.TeleBot(access_token)
 
 db = Database('sqlite:///university.db')
 
+status = -1
+
 
 @bot.message_handler(commands=["start"])
 def default_test(message):
@@ -43,15 +45,10 @@ def first_try(message):
         bot.register_next_step_handler(send, message_to_groups)
 
 
-def registration(status, message):
+def registration(message):
     try:
+        global status
         surname, name, patronymic, subject = message.text.split('\n')
-        if (status == 'преподаватель') or (status == 'Преподаватель'):
-            status = 0
-        elif (status == 'студент') or (status == 'Студент'):
-            status = 1
-        else:
-            bot.send_message(message.chat.id, 'Проверьте правильность введённых данных')
     except ValueError:
         bot.send_message(message.chat.id, 'Некорректные данные, повторите попытку')
         message.text = '/registration'
@@ -61,7 +58,7 @@ def registration(status, message):
         if status == 0:
             db.add(Teacher(message.chat.id, name, surname, patronymic))
         else:
-            db.add(Student(message.chat.id, name, surname, patronymic, subject))
+            db.add(Student(message.chat.id, name, surname, patronymic, subject, status))
     except IntegrityError:
         return bot.send_message(message.chat.id, "Вы уже зарегистрированы!\n Нажмите /help, чтобы продолжить ")
     bot.send_message(message.chat.id,
@@ -86,21 +83,22 @@ def message_to_groups(message):
 
 
 def go_next(message):
-    if (message.text == 'преподаватель') or (message.text == 'Преподаватель'):
+    global status
+    if message.text.lower() == 'преподаватель':
         sent = bot.send_message(message.chat.id, "Иванов (фамилия)\n"
                                                  "Иван (имя) \n"
                                                  "Иванович (отчество)\n"
                                                  "Математика (предмет)")
-        stat = 0
-        bot.register_next_step_handler(sent, registration(stat, message.text))
+        status = 0
+        bot.register_next_step_handler(sent, registration)
 
-    elif (message.text == 'студент') or (message.text == 'Студент'):
+    elif message.text.lower() == 'студент':
         sent = bot.send_message(message.chat.id, "Иванович (фамилия)\n"
                                                  "Иван (имя) \n"
                                                  "Иванов (отчество)\n"
                                                  "k3240 (Учебная группа)")
-        stat = 1
-        bot.register_next_step_handler(sent, registration(stat, message.text))
+        status = 1
+        bot.register_next_step_handler(sent, registration)
 
     else:
         bot.send_message(message.text.id, 'Проверьте правильность введённых данных')
