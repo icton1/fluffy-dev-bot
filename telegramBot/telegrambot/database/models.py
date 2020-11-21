@@ -7,7 +7,7 @@ Base = declarative_base()
 class Teacher(Base):
     __tablename__ = "teachers"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer)
+    user_id = Column(Integer, unique=True)
     name = Column(String(50), nullable=False)
     surname = Column(String(50), nullable=False)
     patronymic = Column(String(50), nullable=False)
@@ -28,7 +28,7 @@ class Teacher(Base):
 class Student(Base):
     __tablename__ = "students"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False, unique=True)
     name = Column(String(50), nullable=False)
     surname = Column(String(50), nullable=False)
     patronymic = Column(String(50), nullable=False)

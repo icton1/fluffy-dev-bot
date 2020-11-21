@@ -32,7 +32,3 @@ class Database:
         return self.session.query(Teacher).filter(chat_id=chat_id)
 
 
-db = Database('sqlite:///university.db')
-test_s = Student(123, 'Egor', 'Platonov', 'Nikolaevich', 'Y2435')
-test_t = Teacher(456, 'Denis', 'Legin', 'Anatolievich', 'Math')
-print(db.get_teachers())
