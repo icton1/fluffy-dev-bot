@@ -42,7 +42,7 @@ def registration(message):
         status, surname, name, patronymic, subject = message.text.split('\n')
     except ValueError:
         bot.send_message(message.chat.id, 'Некорректные данные, повторите попытку')
-        message.text = '/start'
+        message.text = '/registration'
         first_try(message)
         return
     if status == 0:
