@@ -1,6 +1,4 @@
 import telebot
-from aiogram.types import ReplyKeyboardRemove, \
-    ReplyKeyboardMarkup, KeyboardButton
 from telegrambot.database.db import Database
 from telegrambot.database.models import Teacher, Student
 
@@ -13,8 +11,9 @@ db = Database('sqlite:///university.db')
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup.row('/write_message', '/main_quest', '/deadline_check')
     user_markup.row('/registration')
+    user_markup.row('/write_message')
+    user_markup.row('/main_quest', '/deadline_check')
     bot.send_message(message.from_user.id,
                      "Добро пожаловать, перед началом работы,\n"
                      "Пожалуйста, ознакомьтесь с функционалом.\n"
