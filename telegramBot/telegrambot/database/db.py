@@ -16,7 +16,7 @@ class Database:
         self.session.add(obj)
         self.session.commit()
 
-    def getTableDetails(self, obj):
+    def get_table_details(self, obj):
         return self.session.query(obj).all()
 
     def get_students_or_teacher_by_chat_id(self, chat_id, obj):

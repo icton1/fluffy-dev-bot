@@ -13,7 +13,7 @@ db = Database('sqlite:///university.db')
 def default_test(message):
     keyboard = telebot.types.InlineKeyboardMarkup()
     url_button = telebot.types.InlineKeyboardButton(text="Авторизироваться через ИСУ",
-                                            url="https://isu.ifmo.ru/pls/apex/f?p=2143:LOGIN:106933509959320")
+                                                    url="https://isu.ifmo.ru/pls/apex/f?p=2143:LOGIN:106933509959320")
     keyboard.add(url_button)
     bot.send_message(message.chat.id, "Привет! Авторизируйся перед тем, как начать", reply_markup=keyboard)
 
@@ -59,7 +59,7 @@ def registration(status, message):
         return
     try:
         if status == 0:
-            db.add(Teacher(message.chat.id, name, surname, patronymic, subject))
+            db.add(Teacher(message.chat.id, name, surname, patronymic))
         else:
             db.add(Student(message.chat.id, name, surname, patronymic, subject))
     except IntegrityError:
@@ -77,7 +77,7 @@ def message_to_groups(message):
         bot.send_message(message.chat.id, "Некорректные данные, возврат в меню")
         return
     groups = groups.split()
-    students = db.get(Student)
+    students = db.get_table_details(Student)
     for group in groups:
         for student in students:
             if student.group == group:
