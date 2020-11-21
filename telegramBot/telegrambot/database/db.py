@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import date
 
-from telegrambot.database.models import Student, Base, Teacher
+from telegrambot.database.models import Base, Quest
 
 
 class Database:
@@ -15,11 +16,11 @@ class Database:
         self.session.add(obj)
         self.session.commit()
 
-    def get(self, obj):
+    def getTableDetails(self, obj):
         return self.session.query(obj).all()
 
-    def get_students_by_chat_id(self, chat_id):
-        return self.session.query(Student).filter(chat_id=chat_id)
+    def get_students_or_teacher_by_chat_id(self, chat_id, obj):
+        return self.session.query(obj).filter(chat_id=chat_id).first()
 
-    def get_students_by_chat_id(self, chat_id):
-        return self.session.query(Teacher).filter(chat_id=chat_id)
+    def get_quests_by_deadline_after_current(self):
+        return self.session.query(Quest).filter(Quest.deadline >= date.today()).all()
