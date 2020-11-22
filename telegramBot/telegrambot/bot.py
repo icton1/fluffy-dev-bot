@@ -28,55 +28,61 @@ def default_test(message):
 @bot.message_handler(commands=['help'])
 def handle_start(message):
     global status
+    if status == -1:
+        update_status(message)
     user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
     if status == 0:
         user_markup.row('/write_message')
         user_markup.row('/send_homework')
     else:
-        user_markup.row('/deadline_check')
+        user_markup.row('/deadline')
     bot.send_message(message.from_user.id, "Вам доступны следующие команды",
                      reply_markup=user_markup)
 
 
 @bot.message_handler(content_types=['text'])
 def first_try(message):
+    global status
+    if status == -1:
+        update_status(message)
     if message.text == '/registration':
-        students = db.get_table_details(Student)
-        teachers = db.get_table_details(Teacher)
-        for student in students:
-            if student.user_id == message.chat.id:
-                bot.send_message(message.chat.id, "Вы уже зарегистрированы")
-                return
-        for teacher in teachers:
-            if teacher.user_id == message.chat.id:
-                bot.send_message(message.chat.id, "Вы уже зарегистрированы")
-                return
+        if status != -1:
+            bot.send_message(message.chat.id, "Вы уже зарегистрированы")
+            return
         send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
                                                  "Преподаватель / Студент ")
         bot.register_next_step_handler(send, go_next)
-    elif message.text == '/write_message':
+    elif message.text == '/write_message' and status == 0:
         send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
                                                  "K1234 K3412 (группы)\n"
                                                  "Завтра пар не будет (сообщение группам)")
         bot.register_next_step_handler(send, message_to_groups)
-    elif message.text == '/send_homework':
+    elif message.text == '/send_homework' and status == 0:
         send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
                                                  "K1234 K3412 (группы)\n"
                                                  "Математика\n"
                                                  "ЛР10. Методичка. (сообщение группам)\n"
-                                                 "2020-11-22 (дата сдачи)\n")
+                                                 "2020-11-22 (дата сдачи (гггг-мм-дд))")
         bot.register_next_step_handler(send, homework)
-    elif message.text == '/my_deadlines':
+    elif message.text == '/deadline' and status == 1:
         s_id = db.get_students_by_chat_id(message.chat.id)
         list_deadline = db.get_quests_by_deadline_after_current(s_id.id)
+        if not list_deadline:
+            bot.send_message(message.chat.id, "Заданий на последущие дни нет - проведите свободное время с умом.")
         for deadline in list_deadline:
-            bot.send_message(message.chat.id, deadline.text)
+            bot.send_message(message.chat.id, deadline.subject + "\n" + deadline.text + "\n" +
+                             str(deadline.deadline))
+    else:
+        bot.send_message(message.chat.id, "Введена неверная команда, нажмите /help.")
 
 
 def registration(message):
     try:
         global status
-        surname, name, patronymic, subject = message.text.split('\n')
+        if status == 0:
+            surname, name, patronymic = message.text.split('\n')
+        else:
+            surname, name, patronymic, subject = message.text.split('\n')
     except ValueError:
         bot.send_message(message.chat.id, 'Некорректные данные, повторите попытку')
         message.text = '/registration'
@@ -88,9 +94,9 @@ def registration(message):
         else:
             db.add(Student(message.chat.id, name, surname, patronymic, subject, status))
     except IntegrityError:
-        return bot.send_message(message.chat.id, "Вы уже зарегистрированы!\n Нажмите /help, чтобы продолжить ")
+        return bot.send_message(message.chat.id, "Вы уже зарегистрированы!\nНажмите /help, чтобы продолжить ")
     bot.send_message(message.chat.id,
-                     "{name} {patronymic}, Вы успешно зарегестрированы!\n Нажмите /help, чтобы продолжить".format(
+                     "{name} {patronymic}, Вы успешно зарегестрированы!\nНажмите /help, чтобы продолжить".format(
                          name=name,
                          patronymic=patronymic))
 
@@ -98,6 +104,7 @@ def registration(message):
 def message_to_groups(message):
     try:
         groups, mess = message.text.split('\n')
+        teacher = db.get_teacher_by_chat_id(message.chat.id)
     except ValueError:
         bot.send_message(message.chat.id, "Некорректные данные, возврат в меню")
         return
@@ -106,7 +113,8 @@ def message_to_groups(message):
     for group in groups:
         for student in students:
             if student.group == group:
-                bot.send_message(student.user_id, mess)
+                bot.send_message(student.user_id, teacher.surname + " " + teacher.name + " " +
+                                 teacher.patronymic + "\n\n" + mess)
     bot.send_message(message.chat.id, "Сообщения отправлены!")
 
 
@@ -115,8 +123,7 @@ def go_next(message):
     if message.text.lower() == 'преподаватель':
         sent = bot.send_message(message.chat.id, "Иванов (фамилия)\n"
                                                  "Иван (имя) \n"
-                                                 "Иванович (отчество)\n"
-                                                 "Математика (предмет)")
+                                                 "Иванович (отчество)")
         status = 0
         bot.register_next_step_handler(sent, registration)
 
@@ -149,6 +156,23 @@ def homework(message):
                     db.add(Quest(text, subject, date(int(deadline[0]), int(deadline[1]), int(deadline[2])), student.id))
                 except:
                     return
+    bot.send_message(message.chat.id, "Сообщения отправлены!")
+
+
+def update_status(message):
+    global status
+    students = db.get_table_details(Student)
+    teachers = db.get_table_details(Teacher)
+    for student in students:
+        if student.user_id == message.chat.id:
+            status = 1
+            break
+    if status != -1:
+        return
+    for teacher in teachers:
+        if teacher.user_id == message.chat.id:
+            status = 0
+            break
 
 
 if __name__ == '__main__':
