@@ -1,12 +1,13 @@
 from datetime import date
 
 import telebot
-from telegrambot.database.db import Database
-from telegrambot.database.models import Teacher, Student, Quest
 from sqlalchemy.exc import IntegrityError
 
+from telegrambot.database.db import Database
+from telegrambot.database.models import Teacher, Student, Quest
+
 access_token = "1489218543:AAGKxQNnAjHPLyc3LTYlk4adYWZKEj91NXE"
-bot = telebot.TeleBot(access_token)
+bot = telebot.TeleBot(access_token, threaded=False)
 
 db = Database('sqlite:///university.db')
 
@@ -151,4 +152,9 @@ def homework(message):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except Exception as e:
+            print(e)
+            bot.stop_polling()
