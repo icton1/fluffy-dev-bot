@@ -16,10 +16,10 @@ def default_test(message):
     user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
     user_markup.row('/registration')
     bot.send_message(message.from_user.id,
-    "Добро пожаловать, перед началом работы,\n"
-    "Пожалуйста, ознакомьтесь с функционалом.\n"
-    "Прежде всего вам необходимо зарегистрироваться",
-    reply_markup = user_markup)
+                     "Добро пожаловать, перед началом работы,\n"
+                     "Пожалуйста, ознакомьтесь с функционалом.\n"
+                     "Прежде всего вам необходимо зарегистрироваться",
+                     reply_markup=user_markup)
 
 
 @bot.message_handler(commands=['help'])
@@ -28,10 +28,10 @@ def handle_start(message):
     user_markup = telebot.types.ReplyKeyboardMarkup(True, True)
     if status == 0:
         user_markup.row('/write_message')
-        user_markup.row('/main_quest')
+        user_markup.row('/send_homework')
     else:
         user_markup.row('/deadline_check')
-    bot.send_message(message.from_user.id,"Вам доступны следующие команды",
+    bot.send_message(message.from_user.id, "Вам доступны следующие команды",
                      reply_markup=user_markup)
 
 
@@ -46,6 +46,12 @@ def first_try(message):
                                                  "K1234 K3412 (группы)\n"
                                                  "Завтра пар не будет (сообщение группам)")
         bot.register_next_step_handler(send, message_to_groups)
+    elif message.text == '/send_homework':
+        send = bot.send_message(message.chat.id, "Введите данные в следующем формате:\n"
+                                                 "K1234 K3412 (группы)\n"
+                                                 "Завтра пар не будет (сообщение группам)\n"
+                                                 "22 ноября 2020 (дата сдачи)\n")
+        bot.register_next_step_handler(send, homework)
 
 
 def registration(message):
@@ -105,6 +111,10 @@ def go_next(message):
 
     else:
         bot.send_message(message.text.id, 'Проверьте правильность введённых данных')
+
+
+def homework(message):
+    pass
 
 
 if __name__ == '__main__':
