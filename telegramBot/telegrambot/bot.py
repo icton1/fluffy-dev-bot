@@ -96,7 +96,7 @@ def registration(message):
     except IntegrityError:
         return bot.send_message(message.chat.id, "Вы уже зарегистрированы!\nНажмите /help, чтобы продолжить ")
     bot.send_message(message.chat.id,
-                     "{name} {patronymic}, Вы успешно зарегестрированы!\nНажмите /help, чтобы продолжить".format(
+                     "{name} {patronymic}, Вы успешно зарегистрированы!\nНажмите /help, чтобы продолжить".format(
                          name=name,
                          patronymic=patronymic))
 
