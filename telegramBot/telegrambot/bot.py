@@ -43,8 +43,7 @@ def handle_start(message):
 @bot.message_handler(content_types=['text'])
 def first_try(message):
     global status
-    if status == -1:
-        update_status(message)
+    update_status(message)
     if message.text == '/registration':
         if status != -1:
             bot.send_message(message.chat.id, "Вы уже зарегистрированы")
@@ -86,6 +85,7 @@ def registration(message):
     except ValueError:
         bot.send_message(message.chat.id, 'Некорректные данные, повторите попытку')
         message.text = '/registration'
+        status = -1
         first_try(message)
         return
     try:
@@ -137,6 +137,8 @@ def go_next(message):
 
     else:
         bot.send_message(message.chat.id, 'Проверьте правильность введённых данных')
+        message.text = '/registration'
+        first_try(message)
 
 
 def homework(message):
